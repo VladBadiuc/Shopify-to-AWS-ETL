@@ -68,12 +68,18 @@ It is essential to set the lambda trigger as the temporary S3 bucket. Not necess
 
 The mission of this lambda function is to get the bucketName and the fileName and pass them as --parameters to the Glue Job. The library boto3 will be needed. It will help us create a client('glue') and glue.start_job_run().
 
+***********************************************************************************************************************************************************
 
 
+4. Glue Script explanation and final load
 
+AWS Glue is a serverless ETL tool which is cost effective and easy to store the result into S3, RDS or RedShift.
+The Shopify-CDC.py glue script was initially implemented in DataBricks and later imported into the glue editor. It is important to be careful with the original library imports in the initial glue script. Another consideration we need to keep in mind is when we pass parameters from lambda we declare them as '--bucketName', '--fileName' but when we receive them in the Glue Task the '--' is removed, like 'bucketName' or 'fileName'.
 
+This Job Task is made to pull the .csv files from the temporary S3 bucket, transform them with PySpark and finally push them into a single .csv file at the final S3 bucket.
 
-
+DMS always creates the first file named like 'LOAD00000xxx.csv' and the next ones as '2022xxx-xxxx.csv', so our PySpark script has to detect this and treat them differently. This is because the LOAD.csv file doesn't contain an 'action' column which can be I,U or D, Insert, Update or Delete, respectively.
+The final write.csv() needs to be mode = append to store everything into a single csv and not into multiple as it could be problematic when migrating to different ecosystems.
 
 
 
