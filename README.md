@@ -19,7 +19,7 @@ Alternative way to store data from Shopify into an AWS S3 bucket using and Chang
 
 I wanted to find an alternative way to store the data of my Shopify customers and orders so I decided to use my knowledge of ETL pipelines for this project. I consider Change Data Capture (CDC) to be the best structure for this functionality because I want to store the data itself and all the changes.
 
-I opened a blank Shopify store to avoid leaking any sensitive data.
+I opened a blank Shopify store to avoid leaking any sensitive data. The API and MySQL access keys have been deleted and need to be set at credentials.py
 
 
 The main data I want to store is customer and orders data, so I create random customers from my Shopify platform, I move that data to my Python script running on an EC2 instance. This .py script is going to extract the customer data via API calls, transform it into tables and push into a RDS MySQL database.
@@ -57,6 +57,22 @@ In this second step we need to migrate the data into a temporary S3 bucket. Ever
 -A replication instance with the minimal 'Instance class', dms.t2.small is enough.
 
 -A migration task of type 'Migrate data and replicate ongoing changes'.
+
+***********************************************************************************************************************************************************
+
+
+3. AWS Glue invokation via Lambda
+
+At this point every new query in MySQL should produce a new .csv file in the temporary S3 bucket. This event has to trigger a lambda function.
+It is essential to set the lambda trigger as the temporary S3 bucket. Not necessary to set the target.
+
+The mission of this lambda function is to get the bucketName and the fileName and pass them as --parameters to the Glue Job. The library boto3 will be needed. It will help us create a client('glue') and glue.start_job_run().
+
+
+
+
+
+
 
 
 
